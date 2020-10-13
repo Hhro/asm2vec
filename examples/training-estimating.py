@@ -4,16 +4,18 @@ import asm2vec.asm
 import asm2vec.parse
 import asm2vec.model
 
+import sys
+
 
 def cosine_similarity(v1, v2):
     return np.dot(v1, v2) / (np.linalg.norm(v1) * np.linalg.norm(v2))
 
 
-def main():
-    training_funcs = asm2vec.parse.parse('training.s',
-                                         func_names=['main', 'my_strlen_train', 'my_strcmp_train'])
-    estimating_funcs = asm2vec.parse.parse('estimating.s',
-                                           func_names=['main', 'my_strlen_est', 'my_strcmp_est'])
+def main(train, estm):
+    training_funcs = asm2vec.parse.parse(train,
+                                         func_names=['main', 'avg', 'div'])
+    estimating_funcs = asm2vec.parse.parse(estm,
+                                           func_names=['main', 'avg', 'div'])
 
     print('# of training functions:', len(training_funcs))
     print('# of estimating functions:', len(estimating_funcs))
@@ -39,4 +41,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1], sys.argv[2])

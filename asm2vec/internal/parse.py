@@ -176,6 +176,23 @@ class CFGBuilder:
             asm2vec.asm.walk_cfg(f.entry(), block_action)
 
         # TODO: Implement Selective Callee Expansion here.
+        for (name, f) in funcs.items():
+            inlinee: Dict[str, asm2vec.asm.Function] = dict()
+            for callee in f.callees():
+                alpha = callee.out_degree() / (callee.out_degree()+callee.in_degree())
+                delta = len(callee) / len(f)
+
+                if alpha > 0.01 and (delta < 0.6 or len(callee) < 10):
+                    print(f"Do Inlining for {name}->{callee.name()}")
+                    inlinee.update({callee.name():callee})
+
+            print(inlinee)
+            def inline_expansion(block: asm2vec.asm.BasicBlock) -> None:
+                for idx, instr in enumerate(block):
+                    if is_call(instr.op()) and instr.args()[0] in inlinee.keys():
+                        block.inline(idx, inlinee[instr.args()[0]])
+                
+            asm2vec.asm.walk_cfg(f.entry(), inline_expansion)
 
         return list(funcs.values())
 
@@ -248,7 +265,7 @@ def parse_asm_label(ln: str, context: ParseContext) -> None:
 
 
 def parse_asm_instr(ln: str, context: ParseContext) -> None:
-    delim_index = ln.find(' ')
+    delim_index = ln.find('\t')
     args = []
     if delim_index == -1:
         op = ln

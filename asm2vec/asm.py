@@ -74,6 +74,9 @@ class BasicBlock:
     def add_successor(self, successor: 'BasicBlock') -> None:
         self._successors.append(successor)
         successor._predecessors.append(self)
+    
+    def remove_instruction(self, idx: int) -> None:
+        del(self._instructions[idx])
 
     def first_instruction(self) -> Instruction:
         return self._instructions[0]
@@ -92,6 +95,9 @@ class BasicBlock:
 
     def out_degree(self) -> int:
         return len(self._successors)
+
+    def inline(self, idx: int, callee:'Function') -> None:
+        self._instructions=self._instructions[:idx] + callee.instructions() + self._instructions[idx+1:]
 
 
 class CFGWalkerCallback:
@@ -188,3 +194,14 @@ class Function:
 
     def in_degree(self) -> int:
         return len(self._callers)
+
+    def instructions(self) -> List[Instruction]:
+        inst=[]
+
+        def collect_instr(block: BasicBlock) -> None:
+            nonlocal inst
+            inst += block.instructions()
+
+        walk_cfg(self._entry, collect_instr)
+
+        return inst

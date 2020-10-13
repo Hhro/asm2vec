@@ -55,11 +55,11 @@ def _edge_sampling(f: Function) -> List[List[Instruction]]:
 
 def make_sequential_function(f: Function, num_of_random_walks: int = 10) -> SequentialFunction:
     seq: List[List[Instruction]] = []
-
+    
     for _ in range(num_of_random_walks):
         seq.append(_random_walk(f))
 
-    # seq += _edge_sampling(f)
+    seq += _edge_sampling(f)
 
     return SequentialFunction(f.id(), f.name(), seq)
 
